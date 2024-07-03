@@ -126,4 +126,262 @@ class RubikscubeBitboard : public Rubikscube{
 
         return *this;
     }
-}
+
+    Rubikscube &l() override{
+        this->rotateFace(1);
+        uint64_t clr1= (bitboard[2] & (one_8 << (8 * 0))) >> (8 * 0);
+        uint64_t clr2= (bitboard[2] & (one_8 << (8 * 6))) >> (8 * 6);
+        uint64_t clr3= (bitboard[2] & (one_8 << (8 * 7))) >> (8 * 7);
+
+        this->rotateSide(2, 0, 7, 6, 0, 0, 7, 6);
+        this->rotateSide(0, 0, 7, 6, 4, 4, 3, 2);
+        this->rotateSide(4, 5, 3, 2, 5, 0, 7, 6);
+
+        bitboard[5] = (bitboard[5] & ~(one_8 << (8 * 0))) | (clr1 << (8 * 0));
+        bitboard[5] = (bitboard[5] & ~(one_8 << (8 * 6))) | (clr2 << (8 * 6));
+        bitboard[5] = (bitboard[5] & ~(one_8 << (8 * 7))) | (clr3 << (8 * 7));
+        
+        return *this;
+    }
+
+    Rubikscube &lprime() override{
+        this->l();
+        this->l();
+        this->l();
+
+        return *this;
+    }
+
+    Rubikscube &l2() override{
+        this->l();
+        this->l();
+
+        return *this;
+    }
+
+    Rubikscube &f() override{
+        this->rotateFace(2);
+        uint64_t clr1 = (bitboard[0] & (one_8 << (8 * 4))) >> (8 * 4);
+        uint64_t clr2 = (bitboard[0] & (one_8 << (8 * 5))) >> (8 * 5);
+        uint64_t clr3 = (bitboard[0] & (one_8 << (8 * 6))) >> (8 * 6);
+        
+        this->rotateSide(0, 4, 5, 6, 1, 2, 3, 4);
+        this->rotateSide(1, 2, 3, 4, 5, 0, 1, 2);
+        this->rotateSide(5, 0, 1, 2, 3, 6, 7, 0);
+
+        bitboard[3]= (bitboard[0] ~(one_8 << (8 * 6))) | (clr1 << (8 * 6));
+        bitboard[3]= (bitboard[0] ~(one_8 << (8 * 7))) | (clr2 << (8 * 7));
+        bitboard[3]= (bitboard[0] ~(one_8 << (8 * 8))) | (clr3 << (8 * 8));
+        
+    }
+    Rubikscube &fprime() override{
+        this->f();
+        this->f();
+        this->f();
+
+        return *this;
+    }
+
+    Rubikscube &f2() override{
+        this->f();
+        this->f();
+
+        return *this;
+    }
+
+    Rubikscube &r() override{
+        this->rotateFace(3);
+        uint64_t clr1 = (bitboard[0] & (one_8 << (8 * 2))) >> (8 * 2);
+        uint64_t clr2 = (bitboard[0] & (one_8 << (8 * 3))) >> (8 * 3);
+        uint64_t clr3 = (bitboard[0] & (one_8 << (8 * 4))) >> (8 * 4);
+        
+        this->rotateSide(0, 2, 3, 4, 2, 2, 3, 4);
+        this->rotateSide(2, 2, 3, 4, 5, 2, 3, 4);
+        this->rotateSide(5, 2, 3, 4, 4, 7, 6, 0);
+
+        bitboard[4]= (bitboard[4] & ~(one_8 << (8 * 7))) | (clr1 << (8 * 7));
+        bitboard[4]= (bitboard[4] & ~(one_8 << (8 * 6))) | (clr2 << (8 * 6));
+        bitboard[4]= (bitboard[4] & ~(one_8 << (8 * 0))) | (clr3 << (8 * 0));
+        
+        return *this;
+    }
+
+    Rubikscube &rprime() override{
+        this->r();
+        this->r();
+        this->r();
+
+        return *this;
+    }
+
+    Rubikscube &r2() override{
+        this->r();
+        this->r();
+        
+        return *this;
+    }
+
+    Rubikscube &b() override{
+        this->rotateFace(4);
+
+        uint64_t clr1= (bitboard[0] & (one_8 << (8 * 0))) >> (8 * 0);
+        uint64_t clr2= (bitboard[0] & (one_8 << (8 * 1))) >> (8 * 1);
+        uint64_t clr3= (bitboard[0] & (one_8 << (8 * 2))) >> (8 * 2);
+        
+        this->rotateSide(0, 0, 1, 2, 3, 2, 3, 4);
+        this->rotateSide(3, 2, 3, 4, 5, 4, 5, 6);
+        this->rotateSide(5, 4, 5, 6, 1, 6, 7, 0);
+
+        bitboard[1]= (bitboard[1] & ~(one_8 << (8 * 6))) | (clr1 << (8 * 6));
+        bitboard[1]= (bitboard[1] & ~(one_8 << (8 * 7))) | (clr2 << (8 * 7));
+        bitboard[1]= (bitboard[1] & ~(one_8 << (8 * 0))) | (clr3 << (8 * 0));
+        
+        return *this;
+    }
+
+    Rubikscube &bprime() override{
+        this->b();
+        this->b();
+        this->b();
+
+        return *this;
+    }
+
+    Rubikscube &b2() override{
+        this->b();
+        this->b();
+
+        return *this;
+    }
+
+    Rubikscube &d() override{
+        this->rotateFace(5);
+        
+        uint64_t clr1= (bitboard[2] & (one_8 << (8 * 4))) >> (8 * 4);
+        uint64_t clr2= (bitboard[2] & (one_8 << (8 * 5))) >> (8 * 5);
+        uint64_t clr3= (bitboard[2] & (one_8 << (8 * 6))) >> (8 * 6);
+
+        this->rotateSide(2, 4, 5, 6, 1, 4, 5, 6);
+        this->rotateSide(1, 4, 5, 6, 4, 4, 5, 6);
+        this->rotateSide(4, 4, 5, 6, 3, 4, 5, 6);
+
+        bitboard[3]= (bitboard[3] & ~(one_8 << (8 * 4))) | (clr1 << (8 * 4));
+        bitboard[3]= (bitboard[3] & ~(one_8 << (8 * 5))) | (clr2 << (8 * 5));
+        bitboard[3]= (bitboard[3] & ~(one_8 << (8 * 6))) | (clr3 << (8 * 6));
+        
+        return *this;
+        
+    }
+
+    Rubikscube &dprime() override{
+        this->d();
+        this->d();
+        this->d();
+        
+        return *this;
+    }
+
+    Rubikscube &d2() override{
+        this->d();
+        this->d();
+
+        return *this;
+    }
+
+    bool operator == (const RubikscubeBitboard &r1) const{
+        for(int i=0; i<6; i++){
+            if(bitboard[i] != r1.bitboard[i])return false;
+        }
+        return true;
+    }
+
+    RubikscubeBitboard &operator =(const RubikscubeBitboard &r1){
+        for(int i=0; i<6; i++){
+            bitboard[i]= r1.bitboard[i];
+        }
+        return *this;
+    }
+
+    uint64_t getCorners(){
+        uint64_t ret=0;
+        
+        string top_front_right = "";
+        top_front_right += getColorLetter(getColor(FACE::up, 2, 2));
+        top_front_right += getColorLetter(getColor(FACE::front, 0, 2));
+        top_front_right += getColorLetter(getColor(FACE::right, 0, 0));
+
+        string top_front_left = "";
+        top_front_left += getColorLetter(getColor(FACE::up, 2, 0));
+        top_front_left += getColorLetter(getColor(FACE::front, 0, 0));
+        top_front_left += getColorLetter(getColor(FACE::left, 0, 2));
+
+        string top_back_left = "";
+        top_back_left += getColorLetter(getColor(FACE::up, 0, 0));
+        top_back_left += getColorLetter(getColor(FACE::back, 0, 2));
+        top_back_left += getColorLetter(getColor(FACE::left, 0, 0));
+
+        string top_back_right = "";
+        top_back_right += getColorLetter(getColor(FACE::up, 0, 2));
+        top_back_right += getColorLetter(getColor(FACE::back, 0, 0));
+        top_back_right += getColorLetter(getColor(FACE::right, 0, 2));
+
+        string bottom_front_right = "";
+        bottom_front_right += getColorLetter(getColor(FACE::down, 0, 2));
+        bottom_front_right += getColorLetter(getColor(FACE::front, 2, 2));
+        bottom_front_right += getColorLetter(getColor(FACE::right, 2, 0));
+
+        string bottom_front_left = "";
+        bottom_front_left += getColorLetter(getColor(FACE::down, 0, 0));
+        bottom_front_left += getColorLetter(getColor(FACE::front, 2, 0));
+        bottom_front_left += getColorLetter(getColor(FACE::left, 2, 2));
+
+        string bottom_back_right = "";
+        bottom_back_right += getColorLetter(getColor(FACE::down, 2, 2));
+        bottom_back_right += getColorLetter(getColor(FACE::back, 2, 0));
+        bottom_back_right += getColorLetter(getColor(FACE::right, 2, 2));
+
+        string bottom_back_left = "";
+        bottom_back_left += getColorLetter(getColor(FACE::down, 2, 0));
+        bottom_back_left += getColorLetter(getColor(FACE::back, 2, 2));
+        bottom_back_left += getColorLetter(getColor(FACE::left, 2, 0));
+        
+
+        ret |= get5bitCorner(top_front_right);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(top_front_left);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(top_back_right);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(top_back_left);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(bottom_front_right);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(bottom_front_left);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(bottom_back_right);
+        ret = ret << 5;
+
+        ret |= get5bitCorner(bottom_back_left);
+        ret = ret << 5;
+
+
+        return ret;
+    }
+
+};
+
+
+
+struct HashBitboard{
+    size_t operator()(const RubikscubeBitboard &r1) const{
+        uint64_t final_hash = r1.bitboard[0];
+        for(int i=1; i<6; i++)final_hash^= r1.bitboard[i];
+        return (size_t)final_hash;
+    }
+};
