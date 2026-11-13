@@ -1,12 +1,16 @@
+#ifndef RUBIKS_CUBE_SOLVER_RUBIKSCUBE_H
 #define RUBIKS_CUBE_SOLVER_RUBIKSCUBE_H
-#ifdef RUBIKS_CUBE_SOLVER_RUBIKSCUBE_H
 
-#include<bits/stdc++.h>
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
 using namespace std;
 
 
 class Rubikscube{
     public:
+    virtual ~Rubikscube() = default;
     enum class FACE{
         up, left, front, right, down, back
     };

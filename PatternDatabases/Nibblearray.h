@@ -1,7 +1,11 @@
 #ifndef RUBIKS_CUBE_SOLVER_NIBBLEARRAY_H
 #define RUBIKS_CUBE_SOLVER_NIBBLEARRAY_H
 
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 using namespace std;
 
@@ -18,13 +22,14 @@ class Nibblearray{
     void set(const size_t pos, const uint8_t val);
 
     const unsigned char *data() const;
+    unsigned char *data();
     
     size_t storageSize() const;
 
     void inflate(vector<uint8_t> &dest) const;
 
     void reset(const uint8_t val = 0xFF);
-}
+};
 
 
 #endif

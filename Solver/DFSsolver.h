@@ -1,5 +1,5 @@
-#include<bits/stdc++.h>
-#include "../Model/Rubikscube.h"
+#include <vector>
+#include "../model/Rubikscube.h"
 
 #ifndef RUBIKS_CUBE_SOLVER_DFSSOLVER_H
 #define RUBIKS_CUBE_SOLVER_DFSSOLVER_H
@@ -12,8 +12,9 @@ class DFSsolver{
 
     bool dfs(int depth){
         if(rubiksCube.isSolved())return 1;
-        if(depth> maxDepth)return 0;
+        if(depth >= maxDepth)return 0;
         for(int i=0; i<18; i++){
+            if(!moves.empty() && i / 3 == static_cast<int>(moves.back()) / 3) continue;
             rubiksCube.move(Rubikscube::MOVE(i));
             moves.push_back(Rubikscube::MOVE(i));
             if(dfs(depth+1))return 1;
@@ -29,12 +30,13 @@ class DFSsolver{
 
     DFSsolver(T _rubiksCube, int _maxDepth=8){
         rubiksCube= _rubiksCube;
-        maxdDepth= _maxDepth;
+        maxDepth= _maxDepth;
     }
-    vector<RubiksCube::MOVE> solve(){
-        dfs(1);
+    vector<Rubikscube::MOVE> solve(){
+        moves.clear();
+        dfs(0);
         return moves;
     }
-}
+};
 
 #endif

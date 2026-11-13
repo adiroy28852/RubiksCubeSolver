@@ -1,8 +1,7 @@
 #ifndef RUBIKS_CUBE_SOLVER_CORNERDBMAKER_H
 #define RUBIKS_CUBE_SOLVER_CORNERDBMAKER_H
 
-#include <CornerPatternDB.h>
-#include "../model/RubikscubeBitboard.cpp"
+#include "CornerPatternDB.h"
 
 using namespace std;
 class CornerDBMaker{
@@ -15,6 +14,6 @@ class CornerDBMaker{
     CornerDBMaker(string _filename, uint8_t init_val);
 
     bool bfsAndStore();
-}
+};
 
 #endif

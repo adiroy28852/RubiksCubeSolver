@@ -1,8 +1,8 @@
 #include "CornerPatternDB.h"
 
-CornerPatternDB :: CornerPatternDB(): PatternDatabase(100179840) {}
+CornerPatternDB :: CornerPatternDB(): Patterndatabase(88179840, 9) {}
 
-CornerPatternDB :: CornerPatternDB(uint8_t init_val) : Patterndatabase(100179840, init_val){}
+CornerPatternDB :: CornerPatternDB(uint8_t init_val) : Patterndatabase(88179840, init_val){}
 
 uint32_t CornerPatternDB :: getDatabaseindex (const Rubikscube &cube) const{
     array<uint8_t, 8> cornerPerm = {
@@ -33,5 +33,5 @@ uint32_t CornerPatternDB :: getDatabaseindex (const Rubikscube &cube) const{
                                 cornerOrientation[4] * 9 + cornerOrientation[5] * 3 + 
                                 cornerOrientation[6]);
 
-    return (rank*2187) _ orientationNum;
+    return (rank*2187) + orientationNum;
 }

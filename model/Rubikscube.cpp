@@ -1,5 +1,5 @@
 #include "Rubikscube.h"
-#include <bits/stdc++.h>
+#include <random>
 // using namespace std;
 
 char Rubikscube::getColorLetter(COLOR color){
@@ -23,40 +23,41 @@ string Rubikscube::getMove(MOVE ind){
         case MOVE::l:
             return "L";
         case MOVE::lprime:
-            return "l";
+            return "L'";
         case MOVE::l2:
-            return "l2";
+            return "L2";
         case MOVE::r:
-            return "r";
+            return "R";
         case MOVE::rprime:
-            return "r";
+            return "R'";
         case MOVE::r2:
-            return "r2";
+            return "R2";
         case MOVE::d:
-            return "d";
+            return "D";
         case MOVE::dprime:
-            return "d";
+            return "D'";
         case MOVE::d2:
-            return "d2";
+            return "D2";
         case MOVE::u:
-            return "u";
+            return "U";
         case MOVE::uprime:
-            return "u";
+            return "U'";
         case MOVE::u2:
-            return "u2";
+            return "U2";
         case MOVE::f:
-            return "f";
+            return "F";
         case MOVE::fprime:
-            return "f";
+            return "F'";
         case MOVE::f2:
-            return "f2";
+            return "F2";
         case MOVE::b:
-            return "b";
+            return "B";
         case MOVE::bprime:
-            return "b";
+            return "B'";
         case MOVE::b2:
-            return "b2";
+            return "B2";
     }
+    return "?";
 }
 
 Rubikscube &Rubikscube::move(MOVE ind){
@@ -199,9 +200,10 @@ void Rubikscube::print() const{
 
 vector<Rubikscube::MOVE> Rubikscube :: randshuffle(unsigned int times){
     vector<MOVE> movesperformed;
-    srand(time(0));
+    static mt19937 generator(random_device{}());
+    uniform_int_distribution<unsigned int> distribution(0, 17);
     for(unsigned int i=0; i<times; i++){
-        unsigned int select= rand()%18;
+        unsigned int select= distribution(generator);
         movesperformed.emplace_back(static_cast<MOVE>(select));
         this->move(static_cast<MOVE>(select));
     }
@@ -209,49 +211,41 @@ vector<Rubikscube::MOVE> Rubikscube :: randshuffle(unsigned int times){
 }
 
 string Rubikscube:: getCornerColorString(uint8_t ind)const {
-    string str="";
-
     switch(ind){
         case 0:
-            str+= getColorLetter(getcolor(FACE::up, 2, 2));
-            str+= getColorLetter(getcolor(FACE::front, 2, 2));
-            str+= getColorLetter(getcolor(FACE::right, 2, 2));
+            return string{getColorLetter(getcolor(FACE::up, 2, 2)),
+                          getColorLetter(getcolor(FACE::right, 0, 0)),
+                          getColorLetter(getcolor(FACE::front, 0, 2))};
         case 1:
-            str+= getColorLetter(getcolor(FACE::up, 2, 2));
-            str+= getColorLetter(getcolor(FACE::front, 2, 2));
-            str+= getColorLetter(getcolor(FACE::left, 2, 2));
-            
+            return string{getColorLetter(getcolor(FACE::up, 2, 0)),
+                          getColorLetter(getcolor(FACE::front, 0, 0)),
+                          getColorLetter(getcolor(FACE::left, 0, 2))};
         case 2:
-            str+= getColorLetter(getcolor(FACE::up, 2, 2));
-            str+= getColorLetter(getcolor(FACE::back, 2, 2));
-            str+= getColorLetter(getcolor(FACE::right, 2, 2));
+            return string{getColorLetter(getcolor(FACE::up, 0, 0)),
+                          getColorLetter(getcolor(FACE::left, 0, 0)),
+                          getColorLetter(getcolor(FACE::back, 0, 2))};
         case 3:
-            str+= getColorLetter(getcolor(FACE::up, 2, 2));
-            str+= getColorLetter(getcolor(FACE::back, 2, 2));
-            str+= getColorLetter(getcolor(FACE::left, 2, 2));
-            
+            return string{getColorLetter(getcolor(FACE::up, 0, 2)),
+                          getColorLetter(getcolor(FACE::back, 0, 0)),
+                          getColorLetter(getcolor(FACE::right, 0, 2))};
         case 4:
-            str+= getColorLetter(getcolor(FACE::down, 2, 2));
-            str+= getColorLetter(getcolor(FACE::front, 2, 2));
-            str+= getColorLetter(getcolor(FACE::right, 2, 2));
-            
+            return string{getColorLetter(getcolor(FACE::down, 0, 2)),
+                          getColorLetter(getcolor(FACE::front, 2, 2)),
+                          getColorLetter(getcolor(FACE::right, 2, 0))};
         case 5:
-            str+= getColorLetter(getcolor(FACE::down, 2, 2));
-            str+= getColorLetter(getcolor(FACE::front, 2, 2));
-            str+= getColorLetter(getcolor(FACE::left, 2, 2));
-            
+            return string{getColorLetter(getcolor(FACE::down, 0, 0)),
+                          getColorLetter(getcolor(FACE::left, 2, 2)),
+                          getColorLetter(getcolor(FACE::front, 2, 0))};
         case 6:
-            str+= getColorLetter(getcolor(FACE::down, 2, 2));
-            str+= getColorLetter(getcolor(FACE::back, 2, 2));
-            str+= getColorLetter(getcolor(FACE::right, 2, 2));
-            
+            return string{getColorLetter(getcolor(FACE::down, 2, 2)),
+                          getColorLetter(getcolor(FACE::right, 2, 2)),
+                          getColorLetter(getcolor(FACE::back, 2, 0))};
         case 7:
-            str+= getColorLetter(getcolor(FACE::down, 2, 2));
-            str+= getColorLetter(getcolor(FACE::back, 2, 2));
-            str+= getColorLetter(getcolor(FACE::left, 2, 2));
-            
+            return string{getColorLetter(getcolor(FACE::down, 2, 0)),
+                          getColorLetter(getcolor(FACE::back, 2, 2)),
+                          getColorLetter(getcolor(FACE::left, 2, 0))};
     }
-    return str;
+    return {};
 }
 
 uint8_t Rubikscube::getCornerIndex(uint8_t ind)const{
@@ -276,6 +270,7 @@ uint8_t Rubikscube::getCornerIndex(uint8_t ind)const{
 
 uint8_t Rubikscube::getCornerOrientation(uint8_t ind)const{
     string corner= getCornerColorString(ind);
+    if(corner.size() != 3)return 0;
 
     string str= "";
 

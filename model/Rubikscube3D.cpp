@@ -10,25 +10,27 @@ class RubiksCube3D : public Rubikscube{
             }
         }
 
-        for(int i=0; i<3; i++)cube[ind][0][1]= temp[2-i][0];
-        for(int i=0; i<3; i++)cube[ind][i][2]= temp[0][i];
-        for(int i=0; i<3; i++)cube[ind][2][2-i]= temp[i][2];
-        for(int i=0; i<3; i++)cube[ind][2-i][0]= temp[2][2-i];
+        for(int i=0; i<3; i++){
+            for(int j=0; j<3; j++) cube[ind][j][2-i] = temp[i][j];
+        }
     }
     public:
         char cube[6][3][3]{};
 
-    RubiksCube3D{
+    RubiksCube3D(){
         for(int i=0; i<6; i++){
             for(int j=0; j<3; j++){
-                for(int k=0; k<3; i++){
+                for(int k=0; k<3; k++){
                     cube[i][j][k]= getColorLetter(COLOR(i));
                 }
             }
         }
     }
     COLOR getcolor(FACE face, unsigned row, unsigned col)const override{
-        char color= cube[int(face)][row][col];
+        int faceIndex = static_cast<int>(face);
+        if(face == FACE::down) faceIndex = 5;
+        else if(face == FACE::back) faceIndex = 4;
+        char color= cube[faceIndex][row][col];
         switch (color){
             case 'B':
                 return COLOR::blue;
@@ -46,15 +48,16 @@ class RubiksCube3D : public Rubikscube{
     }
 
     bool isSolved()const override{
+        const COLOR colors[6] = {COLOR::white, COLOR::green, COLOR::red,
+                                 COLOR::blue, COLOR::orange, COLOR::yellow};
         for(int i=0; i<6; i++){
             for(int j=0; j<3; j++){
                 for(int k=0; k<3; k++){
-                    if(this->cuble[i][j][k] == getColorLetter(getcolor(i)));
-                    return 0;
+                    if(this->cube[i][j][k] != getColorLetter(colors[i])) return false;
                 }
             }
-            return 1;
         }
+        return true;
     }
 
     Rubikscube &u() override{
@@ -88,7 +91,7 @@ class RubiksCube3D : public Rubikscube{
     }
 
     Rubikscube &l() override{
-        this->rotateface(1);
+        this->rotateFace(1);
 
         //also modified 
         char temp_arr[3]= {};
@@ -130,6 +133,7 @@ class RubiksCube3D : public Rubikscube{
             cube[3][i][0] = temp_arr[i];
         }
 
+        return *this;
     }
 
     Rubikscube &fprime() override{
@@ -148,6 +152,7 @@ class RubiksCube3D : public Rubikscube{
     }
 
     Rubikscube &r() override{
+        this->rotateFace(3);
 
         char temp_arr[3] = {};
         for (int i = 0; i < 3; i++) {
@@ -177,6 +182,7 @@ class RubiksCube3D : public Rubikscube{
     }
 
     Rubikscube &b() override{
+        this->rotateFace(4);
 
         char temp_arr[3] = {};
         for (int i = 0; i < 3; i++) {
@@ -206,6 +212,7 @@ class RubiksCube3D : public Rubikscube{
     }
 
     Rubikscube &d() override{
+        this->rotateFace(5);
 
         char temp_arr[3] = {};
         for (int i = 0; i < 3; i++) {
@@ -219,7 +226,7 @@ class RubiksCube3D : public Rubikscube{
         return *this;        
     }
 
-    Rubikscube &dprime override{
+    Rubikscube &dprime() override{
         this->d();
         this->d();
         this->d();
@@ -227,7 +234,7 @@ class RubiksCube3D : public Rubikscube{
         return *this;
     }
 
-    Rubikscube &d2 override{
+    Rubikscube &d2() override{
         this->d();
         this->d();
 
@@ -237,8 +244,8 @@ class RubiksCube3D : public Rubikscube{
     bool operator ==(const RubiksCube3D &r1)const{
         for(int i=0; i<6; i++){
             for(int j=0; j<3; j++){
-                for(int k=0; k<3; i++){
-                    cube[i][j][k]= r1.cube[i][j][k];
+                for(int k=0; k<3; k++){
+                    if(cube[i][j][k] != r1.cube[i][j][k]) return false;
                 }
             }
         }

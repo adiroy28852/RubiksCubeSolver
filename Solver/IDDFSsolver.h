@@ -1,4 +1,4 @@
-#include<bits/stdc++.h>
+#include <vector>
 #include "../model/Rubikscube.h"
 #include "DFSsolver.h"
 
@@ -20,16 +20,18 @@ class IDDFSsolver{
     }
 
     vector<Rubikscube::MOVE> solver(){
+        moves.clear();
         for(int i=1; i<=maxDepth; i++){
             DFSsolver<T, H> dfssolver(rubiksCube, i);
             moves = dfssolver.solve();
-            if(dfdssolver.rubiksCube.isSolved()){
+            if(dfssolver.rubiksCube.isSolved()){
                 rubiksCube = dfssolver.rubiksCube;
                 break;
             }
         }
         return moves;
     }
-}
+    vector<Rubikscube::MOVE> solve(){ return solver(); }
+};
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef RUBIKS_CUBE_SOLVER_PERMUTATIONINDEXER_H
 #define RUBIKS_CUBE_SOLVER_PERMUTATIONINDEXER_H
-#include "bits/stdc++.h"
+#include <array>
+#include <bitset>
+#include <cstdint>
 #include "math.h"
 
 using namespace std;
@@ -8,7 +10,7 @@ using namespace std;
 template <size_t N, size_t K = N> 
 class Permutationindexer{
     
-    array<uint32_t, (1<<N) -1> CountOnes;
+    array<uint32_t, (1<<N)> CountOnes;
 
     array<uint32_t, K> factorials;
 
@@ -48,8 +50,8 @@ class Permutationindexer{
             index += lehmer[i] * this->factorials[i];
         }
         return index;
-    }
+    };
 
-}
+};
 
 #endif

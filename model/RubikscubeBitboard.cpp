@@ -1,15 +1,62 @@
 #include "Rubikscube.h"
+#include "CubeMoves.h"
+#include <array>
 
 
 class RubikscubeBitboard : public Rubikscube{
     private:
 
     uint64_t solved_sideconfig[6]{};
-    int arr[3][3]= {{0, 1, 2},
-                    {7, 8, 3},
-                    {6, 5, 4}};
+    static constexpr int arr[3][3]= {{0, 1, 2},
+                                     {7, 8, 3},
+                                     {6, 5, 4}};
 
-    uint64_t one_8= (1<<8)-1, one_24= (1<<24)-1;
+    uint64_t one_8= (1<<8)-1;
+
+    struct StickerMove{
+        int destinationFace;
+        int destinationPosition;
+        int sourceFace;
+        int sourcePosition;
+    };
+
+    typedef array<StickerMove, 20> MoveMap;
+
+    static MoveMap createMoveMap(int face){
+        MoveMap moveMap{};
+        int moveIndex = 0;
+        const int faceIndex[6] = {0, 1, 2, 3, 5, 4};
+        const int nx[6] = {0, -1, 0, 1, 0, 0};
+        const int ny[6] = {1, 0, 0, 0, -1, 0};
+        const int nz[6] = {0, 0, 1, 0, 0, -1};
+        for(int sourceFace=0; sourceFace<6; sourceFace++){
+            for(int row=0; row<3; row++){
+                for(int col=0; col<3; col++){
+                    cube_moves::Facelet facelet = cube_moves::getFacelet(sourceFace, row, col);
+                    if(facelet.x*nx[face] + facelet.y*ny[face] + facelet.z*nz[face] != 1) continue;
+                    const int sourcePosition = arr[row][col];
+                    if(sourcePosition == 8) continue;
+                    cube_moves::rotate(facelet, nx[face], ny[face], nz[face]);
+                    const int destinationIndex = cube_moves::getIndex(facelet);
+                    const int destinationRow = (destinationIndex % 9) / 3;
+                    const int destinationCol = destinationIndex % 3;
+                    const int destinationPosition = arr[destinationRow][destinationCol];
+                    moveMap[moveIndex++] = {faceIndex[destinationIndex / 9], destinationPosition,
+                                            faceIndex[sourceFace], sourcePosition};
+                }
+            }
+        }
+        return moveMap;
+    }
+
+    static const MoveMap &getMoveMap(int face){
+        static const array<MoveMap, 6> moveMaps = []{
+            array<MoveMap, 6> maps{};
+            for(int index=0; index<6; index++) maps[index] = createMoveMap(index);
+            return maps;
+        }();
+        return moveMaps[face];
+    }
 
     void rotateFace(int ind){
         uint64_t side= bitboard[ind];
@@ -26,6 +73,20 @@ class RubikscubeBitboard : public Rubikscube{
         bitboard[s1] = (bitboard[s1] & ~(one_8 << (8 * s1_2))) | (clr2 << (8 * s1_2));
         bitboard[s1] = (bitboard[s1] & ~(one_8 << (8 * s1_3))) | (clr3 << (8 * s1_3));
                 
+    }
+
+    void turn(int face, int turns){
+        const MoveMap &moveMap = getMoveMap(face);
+        while(turns-- > 0){
+            uint64_t oldBitboard[6];
+            for(int side=0; side<6; side++) oldBitboard[side] = bitboard[side];
+            for(const StickerMove &move : moveMap){
+                const uint64_t color = (oldBitboard[move.sourceFace] >> (8 * move.sourcePosition)) & one_8;
+                const uint64_t mask = one_8 << (8 * move.destinationPosition);
+                bitboard[move.destinationFace] =
+                    (bitboard[move.destinationFace] & ~mask) | (color << (8 * move.destinationPosition));
+            }
+        }
     }
 
     int get5bitCorner(string corner){
@@ -78,11 +139,16 @@ class RubikscubeBitboard : public Rubikscube{
         }
     }
 
+    RubikscubeBitboard(const RubikscubeBitboard &r1) = default;
+
     COLOR getcolor(FACE face, unsigned row, unsigned col) const override {
+        int faceIndex = static_cast<int>(face);
+        if(face == FACE::down) faceIndex = 5;
+        else if(face == FACE::back) faceIndex = 4;
         int idx= arr[row][col];
-        if (idx==8) return (COLOR)((int)face);
+        if (idx==8) return (COLOR)faceIndex;
         
-        uint64_t side= bitboard[(int)face];
+        uint64_t side= bitboard[faceIndex];
         uint64_t color= (side>> (8* idx)) & one_8;
 
         int bit_pos = 0;
@@ -101,14 +167,7 @@ class RubikscubeBitboard : public Rubikscube{
     }
 
     Rubikscube &u() override{
-        this->rotateFace(0);
-        uint64_t temp= bitboard[2] & one_24;
-
-        bitboard[2]= (bitboard[2]& ~one_24) | (bitboard[3] & one_24);
-        bitboard[3]= (bitboard[3]& ~one_24) | (bitboard[4] & one_24);
-        bitboard[4]= (bitboard[4]& ~one_24) | (bitboard[1] & one_24);
-        bitboard[1]= (bitboard[1]& ~one_24) | temp;
-
+        this->turn(0, 1);
         return *this;
     }
 
@@ -128,19 +187,7 @@ class RubikscubeBitboard : public Rubikscube{
     }
 
     Rubikscube &l() override{
-        this->rotateFace(1);
-        uint64_t clr1= (bitboard[2] & (one_8 << (8 * 0))) >> (8 * 0);
-        uint64_t clr2= (bitboard[2] & (one_8 << (8 * 6))) >> (8 * 6);
-        uint64_t clr3= (bitboard[2] & (one_8 << (8 * 7))) >> (8 * 7);
-
-        this->rotateSide(2, 0, 7, 6, 0, 0, 7, 6);
-        this->rotateSide(0, 0, 7, 6, 4, 4, 3, 2);
-        this->rotateSide(4, 5, 3, 2, 5, 0, 7, 6);
-
-        bitboard[5] = (bitboard[5] & ~(one_8 << (8 * 0))) | (clr1 << (8 * 0));
-        bitboard[5] = (bitboard[5] & ~(one_8 << (8 * 6))) | (clr2 << (8 * 6));
-        bitboard[5] = (bitboard[5] & ~(one_8 << (8 * 7))) | (clr3 << (8 * 7));
-        
+        this->turn(1, 1);
         return *this;
     }
 
@@ -160,19 +207,8 @@ class RubikscubeBitboard : public Rubikscube{
     }
 
     Rubikscube &f() override{
-        this->rotateFace(2);
-        uint64_t clr1 = (bitboard[0] & (one_8 << (8 * 4))) >> (8 * 4);
-        uint64_t clr2 = (bitboard[0] & (one_8 << (8 * 5))) >> (8 * 5);
-        uint64_t clr3 = (bitboard[0] & (one_8 << (8 * 6))) >> (8 * 6);
-        
-        this->rotateSide(0, 4, 5, 6, 1, 2, 3, 4);
-        this->rotateSide(1, 2, 3, 4, 5, 0, 1, 2);
-        this->rotateSide(5, 0, 1, 2, 3, 6, 7, 0);
-
-        bitboard[3]= (bitboard[0] ~(one_8 << (8 * 6))) | (clr1 << (8 * 6));
-        bitboard[3]= (bitboard[0] ~(one_8 << (8 * 7))) | (clr2 << (8 * 7));
-        bitboard[3]= (bitboard[0] ~(one_8 << (8 * 8))) | (clr3 << (8 * 8));
-        
+        this->turn(2, 1);
+        return *this;
     }
     Rubikscube &fprime() override{
         this->f();
@@ -190,19 +226,7 @@ class RubikscubeBitboard : public Rubikscube{
     }
 
     Rubikscube &r() override{
-        this->rotateFace(3);
-        uint64_t clr1 = (bitboard[0] & (one_8 << (8 * 2))) >> (8 * 2);
-        uint64_t clr2 = (bitboard[0] & (one_8 << (8 * 3))) >> (8 * 3);
-        uint64_t clr3 = (bitboard[0] & (one_8 << (8 * 4))) >> (8 * 4);
-        
-        this->rotateSide(0, 2, 3, 4, 2, 2, 3, 4);
-        this->rotateSide(2, 2, 3, 4, 5, 2, 3, 4);
-        this->rotateSide(5, 2, 3, 4, 4, 7, 6, 0);
-
-        bitboard[4]= (bitboard[4] & ~(one_8 << (8 * 7))) | (clr1 << (8 * 7));
-        bitboard[4]= (bitboard[4] & ~(one_8 << (8 * 6))) | (clr2 << (8 * 6));
-        bitboard[4]= (bitboard[4] & ~(one_8 << (8 * 0))) | (clr3 << (8 * 0));
-        
+        this->turn(3, 1);
         return *this;
     }
 
@@ -222,20 +246,7 @@ class RubikscubeBitboard : public Rubikscube{
     }
 
     Rubikscube &b() override{
-        this->rotateFace(4);
-
-        uint64_t clr1= (bitboard[0] & (one_8 << (8 * 0))) >> (8 * 0);
-        uint64_t clr2= (bitboard[0] & (one_8 << (8 * 1))) >> (8 * 1);
-        uint64_t clr3= (bitboard[0] & (one_8 << (8 * 2))) >> (8 * 2);
-        
-        this->rotateSide(0, 0, 1, 2, 3, 2, 3, 4);
-        this->rotateSide(3, 2, 3, 4, 5, 4, 5, 6);
-        this->rotateSide(5, 4, 5, 6, 1, 6, 7, 0);
-
-        bitboard[1]= (bitboard[1] & ~(one_8 << (8 * 6))) | (clr1 << (8 * 6));
-        bitboard[1]= (bitboard[1] & ~(one_8 << (8 * 7))) | (clr2 << (8 * 7));
-        bitboard[1]= (bitboard[1] & ~(one_8 << (8 * 0))) | (clr3 << (8 * 0));
-        
+        this->turn(5, 1);
         return *this;
     }
 
@@ -255,22 +266,8 @@ class RubikscubeBitboard : public Rubikscube{
     }
 
     Rubikscube &d() override{
-        this->rotateFace(5);
-        
-        uint64_t clr1= (bitboard[2] & (one_8 << (8 * 4))) >> (8 * 4);
-        uint64_t clr2= (bitboard[2] & (one_8 << (8 * 5))) >> (8 * 5);
-        uint64_t clr3= (bitboard[2] & (one_8 << (8 * 6))) >> (8 * 6);
-
-        this->rotateSide(2, 4, 5, 6, 1, 4, 5, 6);
-        this->rotateSide(1, 4, 5, 6, 4, 4, 5, 6);
-        this->rotateSide(4, 4, 5, 6, 3, 4, 5, 6);
-
-        bitboard[3]= (bitboard[3] & ~(one_8 << (8 * 4))) | (clr1 << (8 * 4));
-        bitboard[3]= (bitboard[3] & ~(one_8 << (8 * 5))) | (clr2 << (8 * 5));
-        bitboard[3]= (bitboard[3] & ~(one_8 << (8 * 6))) | (clr3 << (8 * 6));
-        
+        this->turn(4, 1);
         return *this;
-        
     }
 
     Rubikscube &dprime() override{
@@ -306,44 +303,44 @@ class RubikscubeBitboard : public Rubikscube{
         uint64_t ret=0;
         
         string top_front_right = "";
-        top_front_right += getColorLetter(getColor(FACE::up, 2, 2));
-        top_front_right += getColorLetter(getColor(FACE::front, 0, 2));
-        top_front_right += getColorLetter(getColor(FACE::right, 0, 0));
+        top_front_right += getColorLetter(getcolor(FACE::up, 2, 2));
+        top_front_right += getColorLetter(getcolor(FACE::front, 0, 2));
+        top_front_right += getColorLetter(getcolor(FACE::right, 0, 0));
 
         string top_front_left = "";
-        top_front_left += getColorLetter(getColor(FACE::up, 2, 0));
-        top_front_left += getColorLetter(getColor(FACE::front, 0, 0));
-        top_front_left += getColorLetter(getColor(FACE::left, 0, 2));
+        top_front_left += getColorLetter(getcolor(FACE::up, 2, 0));
+        top_front_left += getColorLetter(getcolor(FACE::front, 0, 0));
+        top_front_left += getColorLetter(getcolor(FACE::left, 0, 2));
 
         string top_back_left = "";
-        top_back_left += getColorLetter(getColor(FACE::up, 0, 0));
-        top_back_left += getColorLetter(getColor(FACE::back, 0, 2));
-        top_back_left += getColorLetter(getColor(FACE::left, 0, 0));
+        top_back_left += getColorLetter(getcolor(FACE::up, 0, 0));
+        top_back_left += getColorLetter(getcolor(FACE::back, 0, 2));
+        top_back_left += getColorLetter(getcolor(FACE::left, 0, 0));
 
         string top_back_right = "";
-        top_back_right += getColorLetter(getColor(FACE::up, 0, 2));
-        top_back_right += getColorLetter(getColor(FACE::back, 0, 0));
-        top_back_right += getColorLetter(getColor(FACE::right, 0, 2));
+        top_back_right += getColorLetter(getcolor(FACE::up, 0, 2));
+        top_back_right += getColorLetter(getcolor(FACE::back, 0, 0));
+        top_back_right += getColorLetter(getcolor(FACE::right, 0, 2));
 
         string bottom_front_right = "";
-        bottom_front_right += getColorLetter(getColor(FACE::down, 0, 2));
-        bottom_front_right += getColorLetter(getColor(FACE::front, 2, 2));
-        bottom_front_right += getColorLetter(getColor(FACE::right, 2, 0));
+        bottom_front_right += getColorLetter(getcolor(FACE::down, 0, 2));
+        bottom_front_right += getColorLetter(getcolor(FACE::front, 2, 2));
+        bottom_front_right += getColorLetter(getcolor(FACE::right, 2, 0));
 
         string bottom_front_left = "";
-        bottom_front_left += getColorLetter(getColor(FACE::down, 0, 0));
-        bottom_front_left += getColorLetter(getColor(FACE::front, 2, 0));
-        bottom_front_left += getColorLetter(getColor(FACE::left, 2, 2));
+        bottom_front_left += getColorLetter(getcolor(FACE::down, 0, 0));
+        bottom_front_left += getColorLetter(getcolor(FACE::front, 2, 0));
+        bottom_front_left += getColorLetter(getcolor(FACE::left, 2, 2));
 
         string bottom_back_right = "";
-        bottom_back_right += getColorLetter(getColor(FACE::down, 2, 2));
-        bottom_back_right += getColorLetter(getColor(FACE::back, 2, 0));
-        bottom_back_right += getColorLetter(getColor(FACE::right, 2, 2));
+        bottom_back_right += getColorLetter(getcolor(FACE::down, 2, 2));
+        bottom_back_right += getColorLetter(getcolor(FACE::back, 2, 0));
+        bottom_back_right += getColorLetter(getcolor(FACE::right, 2, 2));
 
         string bottom_back_left = "";
-        bottom_back_left += getColorLetter(getColor(FACE::down, 2, 0));
-        bottom_back_left += getColorLetter(getColor(FACE::back, 2, 2));
-        bottom_back_left += getColorLetter(getColor(FACE::left, 2, 0));
+        bottom_back_left += getColorLetter(getcolor(FACE::down, 2, 0));
+        bottom_back_left += getColorLetter(getcolor(FACE::back, 2, 2));
+        bottom_back_left += getColorLetter(getcolor(FACE::left, 2, 0));
         
 
         ret |= get5bitCorner(top_front_right);

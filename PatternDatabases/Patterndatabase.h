@@ -3,7 +3,9 @@
 
 #include "../model/Rubikscube.h"
 #include "Nibblearray.h"
-#include "bits/stdc++.h"
+#include <cstdint>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -12,8 +14,9 @@ class Patterndatabase{
     Nibblearray database;
     size_t size;
     size_t numItems;
+    uint8_t initValue;
 
-    Patterndatabase();
+    Patterndatabase() = delete;
 
     public:
 
@@ -21,7 +24,7 @@ class Patterndatabase{
 
     Patterndatabase(const size_t size, uint8_t init_val);
 
-    virtual uint32_t getDatabaseindex(const Rubikscube &cube, const uint8_t numMoves);
+    virtual uint32_t getDatabaseindex(const Rubikscube &cube) const = 0;
 
     virtual bool setNumMoves(const Rubikscube &cube, const uint8_t numMoves);
 
@@ -44,4 +47,6 @@ class Patterndatabase{
     virtual vector<uint8_t> inflate() const;
 
     virtual void reset();
-}
+};
+
+#endif

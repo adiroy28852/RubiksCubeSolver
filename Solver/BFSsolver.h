@@ -1,4 +1,8 @@
-#include<bits/stdc++.h>
+#include <algorithm>
+#include <cassert>
+#include <queue>
+#include <unordered_map>
+#include <vector>
 #include "../model/Rubikscube.h"
 
 #ifndef RUBIKS_CUBE_SOLVER_BFSSOLVER_H
@@ -26,7 +30,7 @@ class BFSsolver{
                 node.move(curr_move);
                 if(!visited[node]){
                     visited[node]=1;
-                    mode_done[node]= curr_move;
+                    move_done[node]= curr_move;
                     q.push(node);
                 }
                 node.invert(curr_move);
@@ -43,10 +47,13 @@ class BFSsolver{
     }
 
     vector<Rubikscube::MOVE> solve(){
+        moves.clear();
+        visited.clear();
+        move_done.clear();
         T solved_cube = bfs();
         assert(solved_cube.isSolved());
         T curr_cube = solved_cube;
-        while(curr_cube != rubiksCube){
+        while(!(curr_cube == rubiksCube)){
             Rubikscube:: MOVE curr_move = move_done[curr_cube];
             moves.push_back(curr_move);
             curr_cube.invert(curr_move);
@@ -55,7 +62,7 @@ class BFSsolver{
         reverse(moves.begin(), moves.end());
         return moves;
     }
-}
+};
 
 
 #endif

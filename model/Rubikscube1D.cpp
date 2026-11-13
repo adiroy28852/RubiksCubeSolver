@@ -14,15 +14,14 @@ class Rubikscube1D : public Rubikscube{
         char temp_arr[9]={};
         for(int i=0; i<3; i++){
             for(int j=0; j<3; j++){
-                temp_arr[i*3+j] = cube[getIndex(ind, i, j)];
+                temp_arr[i*3+j] = cube[getIdx(ind, i, j)];
             }
         }
 
         for (int i = 0; i < 3; i++) {
-            cube[getIndex(ind, 0, i)] = temp_arr[getIndex(0, 2 - i, 0)];
-            cube[getIndex(ind, i, 2)] = temp_arr[getIndex(0, 0, i)];
-            cube[getIndex(ind, 2, 2 - i)] = temp_arr[getIndex(0, i, 2)];
-            cube[getIndex(ind, 2 - i, 0)] = temp_arr[getIndex(0, 2, 2 - i)];
+            for (int j = 0; j < 3; j++) {
+                cube[getIdx(ind, j, 2 - i)] = temp_arr[i * 3 + j];
+            }
         }
 
     }
@@ -31,17 +30,22 @@ class Rubikscube1D : public Rubikscube{
     char cube[54]{};
 
     Rubikscube1D(){
+        const COLOR colors[6] = {COLOR::white, COLOR::green, COLOR::red,
+                                 COLOR::blue, COLOR::orange, COLOR::yellow};
         for(int i=0; i<6; i++){
             for(int j=0; j<3; j++){
                 for(int k=0; k<3; k++){
-                    cube[i*9 + j*3 + k]= getColorLetter(COLOR(i));
+                    cube[i*9 + j*3 + k]= getColorLetter(colors[i]);
                 }
             }
         }
     }
     
     COLOR getcolor(FACE face, unsigned row, unsigned col) const override{
-        char color = cube[getIdx(int(face), int(row), int(col))];
+        int faceIndex = static_cast<int>(face);
+        if(face == FACE::down) faceIndex = 5;
+        else if(face == FACE::back) faceIndex = 4;
+        char color = cube[getIdx(faceIndex, int(row), int(col))];
         switch (color){
             case 'B':
                 return COLOR::blue;
@@ -55,15 +59,17 @@ class Rubikscube1D : public Rubikscube{
                 return COLOR::white;
             case 'O':
                 return COLOR::orange;
-                
         }
+        return COLOR::white;
     }
 
     bool isSolved()const override{
+        const COLOR colors[6] = {COLOR::white, COLOR::green, COLOR::red,
+                                 COLOR::blue, COLOR::orange, COLOR::yellow};
         for(int i=0; i<6; i++){
             for(int j=0; j<3; j++){
                 for(int k=0; k<3; k++){
-                    if(this->cube[getIdx(i, j, k)] == getColorLetter(COLOR(i)))continue;
+                    if(this->cube[getIdx(i, j, k)] == getColorLetter(colors[i]))continue;
                     return 0;
                 }
             }
@@ -77,11 +83,11 @@ class Rubikscube1D : public Rubikscube{
         char temp_arr[3]= {};
 
         for (int i = 0; i < 3; i++) {
-            temp_arr[i] = cube[getIndex(4, 0, i)];
-            cube[getIndex(4, 0, i)] = cube[getIndex(1, 0, i)];
-            cube[getIndex(1, 0, i)] = cube[getIndex(2, 0, i)];
-            cube[getIndex(2, 0, i)] = cube[getIndex(3, 0, i)];
-            cube[getIndex(3, 0, i)] = temp_arr[i];
+            temp_arr[i] = cube[getIdx(4, 0, i)];
+            cube[getIdx(4, 0, i)] = cube[getIdx(1, 0, i)];
+            cube[getIdx(1, 0, i)] = cube[getIdx(2, 0, i)];
+            cube[getIdx(2, 0, i)] = cube[getIdx(3, 0, i)];
+            cube[getIdx(3, 0, i)] = temp_arr[i];
         }
 
         return *this;
@@ -110,11 +116,11 @@ class Rubikscube1D : public Rubikscube{
         char temp_arr[3]= {};
 
         for (int i = 0; i < 3; i++) {
-            temp_arr[i] = cube[getIndex(0, i, 0)];
-            cube[getIndex(0, i, 0)] = cube[getIndex(4, 2 - i, 2)];
-            cube[getIndex(4, 2 - i, 2)] = cube[getIndex(5, i, 0)];
-            cube[getIndex(5, i, 0)] = cube[getIndex(2, i, 0)];
-            cube[getIndex(2, i, 0)] = temp_arr[i];
+            temp_arr[i] = cube[getIdx(0, i, 0)];
+            cube[getIdx(0, i, 0)] = cube[getIdx(4, 2 - i, 2)];
+            cube[getIdx(4, 2 - i, 2)] = cube[getIdx(5, i, 0)];
+            cube[getIdx(5, i, 0)] = cube[getIdx(2, i, 0)];
+            cube[getIdx(2, i, 0)] = temp_arr[i];
         }
 
         return *this;
@@ -140,17 +146,17 @@ class Rubikscube1D : public Rubikscube{
 
         char temp_arr[3]= {};
         for (int i = 0; i < 3; i++) {
-            temp_arr[i] = cube[getIndex(0, 2, i)];
-            cube[getIndex(0, 2, i)] = cube[getIndex(1, 2 - i, 2)];
-            cube[getIndex(1, 2 - i, 2)] = cube[getIndex(5, 0, 2 - i)];
-            cube[getIndex(5, 0, 2 - i)] = cube[getIndex(3, i, 0)];
-            cube[getIndex(3, i, 0)] = temp_arr[i];
+            temp_arr[i] = cube[getIdx(0, 2, i)];
+            cube[getIdx(0, 2, i)] = cube[getIdx(1, 2 - i, 2)];
+            cube[getIdx(1, 2 - i, 2)] = cube[getIdx(5, 0, 2 - i)];
+            cube[getIdx(5, 0, 2 - i)] = cube[getIdx(3, i, 0)];
+            cube[getIdx(3, i, 0)] = temp_arr[i];
         }
 
         return *this;
     }
 
-    Rubikscube &fprime override{
+    Rubikscube &fprime() override{
         this->f();
         this->f();
         this->f();
@@ -158,7 +164,7 @@ class Rubikscube1D : public Rubikscube{
         return *this;
     }
 
-    Rubikscube &f2 override{
+    Rubikscube &f2() override{
         this->f();
         this->f();
 
@@ -170,11 +176,11 @@ class Rubikscube1D : public Rubikscube{
 
         char temp_arr[3]={};
         for (int i = 0; i < 3; i++) {
-            temp_arr[i] = cube[getIndex(0, 2 - i, 2)];
-            cube[getIndex(0, 2 - i, 2)] = cube[getIndex(2, 2 - i, 2)];
-            cube[getIndex(2, 2 - i, 2)] = cube[getIndex(5, 2 - i, 2)];
-            cube[getIndex(5, 2 - i, 2)] = cube[getIndex(4, i, 0)];
-            cube[getIndex(4, i, 0)] = temp_arr[i];
+            temp_arr[i] = cube[getIdx(0, 2 - i, 2)];
+            cube[getIdx(0, 2 - i, 2)] = cube[getIdx(2, 2 - i, 2)];
+            cube[getIdx(2, 2 - i, 2)] = cube[getIdx(5, 2 - i, 2)];
+            cube[getIdx(5, 2 - i, 2)] = cube[getIdx(4, i, 0)];
+            cube[getIdx(4, i, 0)] = temp_arr[i];
         }
 
         return *this;
@@ -200,11 +206,11 @@ class Rubikscube1D : public Rubikscube{
 
         char temp_arr[3]={};
         for (int i = 0; i < 3; i++) {
-            temp_arr[i] = cube[getIndex(0, 0, 2 - i)];
-            cube[getIndex(0, 0, 2 - i)] = cube[getIndex(3, 2 - i, 2)];
-            cube[getIndex(3, 2 - i, 2)] = cube[getIndex(5, 2, i)];
-            cube[getIndex(5, 2, i)] = cube[getIndex(1, i, 0)];
-            cube[getIndex(1, i, 0)] = temp_arr[i];
+            temp_arr[i] = cube[getIdx(0, 0, 2 - i)];
+            cube[getIdx(0, 0, 2 - i)] = cube[getIdx(3, 2 - i, 2)];
+            cube[getIdx(3, 2 - i, 2)] = cube[getIdx(5, 2, i)];
+            cube[getIdx(5, 2, i)] = cube[getIdx(1, i, 0)];
+            cube[getIdx(1, i, 0)] = temp_arr[i];
         }
 
         return *this;
@@ -231,17 +237,17 @@ class Rubikscube1D : public Rubikscube{
 
         char temp_arr[3]={};
         for (int i = 0; i < 3; i++) {
-            temp_arr[i] = cube[getIndex(2, 2, i)];
-            cube[getIndex(2, 2, i)] = cube[getIndex(1, 2, i)];
-            cube[getIndex(1, 2, i)] = cube[getIndex(4, 2, i)];
-            cube[getIndex(4, 2, i)] = cube[getIndex(3, 2, i)];
-            cube[getIndex(3, 2, i)] = temp_arr[i];
+            temp_arr[i] = cube[getIdx(2, 2, i)];
+            cube[getIdx(2, 2, i)] = cube[getIdx(1, 2, i)];
+            cube[getIdx(1, 2, i)] = cube[getIdx(4, 2, i)];
+            cube[getIdx(4, 2, i)] = cube[getIdx(3, 2, i)];
+            cube[getIdx(3, 2, i)] = temp_arr[i];
         }
 
         return *this;
     }
 
-    Rubikscube &dprime override{
+    Rubikscube &dprime() override{
         this->d();
         this->d();
         this->d();
@@ -249,7 +255,7 @@ class Rubikscube1D : public Rubikscube{
         return *this;
     }
 
-    Rubikscube &d2 override{
+    Rubikscube &d2() override{
         this->d();
         this->d();
         
@@ -278,4 +284,4 @@ struct Hash1D{
 
         return hash<string>()(str);
     }
-}
+};
